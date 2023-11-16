@@ -9,7 +9,33 @@ def read_ensemble_xml_file(path: str):
         score = xml_parser.scoreFromFile(file)
 
         for part in score.parts:
-            print(part.getInstrument().bestName())
+            unprocessed_instrument = part.getInstrument()
+            try:
+                instrument: m21.instrument.Instrument = m21.instrument.fromString(
+                    unprocessed_instrument.bestName()
+                )
+                if instrument.transposition != unprocessed_instrument.transposition:
+                    print(
+                        f">>> WARNING: mismatched transposition for "
+                        f"{unprocessed_instrument.bestName()} "
+                        f"=> {instrument.bestName()}: "
+                        f"{unprocessed_instrument.transposition} "
+                        f"!= {instrument.transposition}"
+                    )
+                    print(
+                        f">>> setting {unprocessed_instrument.transposition} "
+                        f"transposition for {instrument.bestName()}"
+                    )
+                    instrument.transposition = unprocessed_instrument.transposition
+            except m21.instrument.InstrumentException:
+                print(
+                    f">>> WARNING: failed to process "
+                    f"{unprocessed_instrument.bestName()} "
+                    f"into designated Instrument class"
+                )
+                instrument = unprocessed_instrument
+
+            print(instrument)
 
 
 if __name__ == "__main__":
